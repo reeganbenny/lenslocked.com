@@ -1,16 +1,33 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
-func handlerFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>Welcome to my awesome site!</h1>")
+//SitemapIndex is for Xml extraction
+type SitemapIndex struct {
+	Locataions []Location `xml:"sitemap"`
+}
+
+//Location is for xml extration
+type Location struct {
+	Loc string `xml:"loc"`
+}
+
+func (L Location) String() string {
+	return fmt.Sprintf(L.Loc)
 }
 
 func main() {
-	http.HandleFunc("/path", handlerFunc)
-	http.ListenAndServe(":3000", nil)
+	resp, _ := http.Get("https://www.washingtonpost.com/sitemaps/index.xml")
+	bytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 
+	var s SitemapIndex
+	xml.Unmarshal(bytes, &s)
+
+	fmt.Println(s.Locataions)
 }
