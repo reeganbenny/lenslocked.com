@@ -1,4 +1,4 @@
 # lenslocked.com
 
-An awesome website for photo gallery
+An awesome news website using washintonpost sitemap
  
