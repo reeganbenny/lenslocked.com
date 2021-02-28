@@ -4,8 +4,10 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
+	"text/template"
 )
 
 var washPostXML = []byte(`
@@ -35,7 +37,7 @@ var washPostXML = []byte(`
 			<loc>http://www.washingtonpost.com/news-blogs-sports-sitemap.xml</loc>
 		</sitemap>
 		<sitemap>
-			<loc>http://www.washingtonpost.com/news-national-sitemap.xml</loc>
+				<loc>http://www.washingtonpost.com/news-national-sitemap.xml</loc>
 		</sitemap>
 		<sitemap>
 			<loc>http://www.washingtonpost.com/news-blogs-national-sitemap.xml</loc>
@@ -90,7 +92,13 @@ type NewsMap struct {
 	Location string
 }
 
-func main() {
+//NewsMapPage is the struct used to pass to html Page
+type NewsMapPage struct {
+	News map[string]NewsMap
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+
 	var s SitemapIndex
 	var n News
 	newsmap := make(map[string]NewsMap)
@@ -104,15 +112,30 @@ func main() {
 		resp, _ := http.Get(Location)
 		bytes, _ := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
+		log.Println("Extracting news for ", topic)
 		xml.Unmarshal(bytes, &n)
+		log.Println("Length of Titles :-", len(n.Titles))
 		for idx := range n.Titles {
+			if val, ok := newsmap[n.Titles[idx]]; ok {
+				fmt.Println("Repetition value in newsmap := ", val)
+			}
 			newsmap[n.Titles[idx]] = NewsMap{topic, n.Locations[idx]}
 		}
+		log.Println("Current newsmap size :=", len(newsmap))
 	}
+	p := NewsMapPage{News: newsmap}
+	t, err := template.ParseFiles("newstracker.html")
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(t.Execute(w, p))
+}
 
-	for idx, data := range newsmap {
-		fmt.Println("\n\n\nTitle := ", idx)
-		fmt.Println("\nLocation =", data.Location)
-		fmt.Println("\nLocation =", data.Topic)
-	}
+func main() {
+
+	http.HandleFunc("/", indexHandler)
+	http.ListenAndServe(":8000", nil)
+
 }
