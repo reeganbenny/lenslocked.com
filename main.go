@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 var washPostXML = []byte(`
@@ -69,7 +70,6 @@ var washPostXML = []byte(`
 		<sitemap>
 			<loc>http://www.washingtonpost.com/news-blogs-entertainment-sitemap.xml</loc>
 		</sitemap>
-
 	</sitemapindex>
 `)
 
@@ -84,14 +84,9 @@ type News struct {
 	Locations []string `xml:"url>loc"`
 }
 
-//Keywords struct
-type Keywords struct {
-	Keyword string
-}
-
 //NewsMap is the value and Title will be the key
 type NewsMap struct {
-	// Keyword  string
+	Topic    string
 	Location string
 }
 
@@ -102,21 +97,22 @@ func main() {
 
 	bytes := washPostXML
 	xml.Unmarshal(bytes, &s)
-	i := 1
 	for _, Location := range s.Locations {
+		locationTopic := strings.Split(Location, "/")
+		topic := strings.ReplaceAll(locationTopic[3], "-", " ")
+		topic = strings.ReplaceAll(topic, "sitemap.xml", "")
 		resp, _ := http.Get(Location)
 		bytes, _ := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
 		xml.Unmarshal(bytes, &n)
 		for idx := range n.Titles {
-			newsmap[n.Titles[idx]] = NewsMap{n.Locations[idx]}
+			newsmap[n.Titles[idx]] = NewsMap{topic, n.Locations[idx]}
 		}
 	}
 
 	for idx, data := range newsmap {
-		fmt.Println("i = ", i)
-		i = i + 1
 		fmt.Println("\n\n\nTitle := ", idx)
 		fmt.Println("\nLocation =", data.Location)
+		fmt.Println("\nLocation =", data.Topic)
 	}
 }
