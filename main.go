@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -15,66 +14,64 @@ var washPostXML = []byte(`
 		<sitemap>
 			<loc>http://www.washingtonpost.com/news-politics-sitemap.xml</loc>
 		</sitemap>
-
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-politics-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-opinions-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-opinions-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-local-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-local-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-sports-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-sports-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-		<loc>http://www.washingtonpost.com/news-national-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-national-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-world-sitemap.xml </loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-world-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-business-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-business-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-technology-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-technology-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-lifestyle-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-lifestyle-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-entertainment-sitemap.xml</loc>
-</sitemap>
-<sitemap>
-	<loc>http://www.washingtonpost.com/news-blogs-entertainment-sitemap.xml</loc>
-</sitemap>
-
-</sitemapindex>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-politics-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-opinions-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-opinions-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-local-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-local-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-sports-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-sports-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+				<loc>http://www.washingtonpost.com/news-national-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-national-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-world-sitemap.xml </loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-world-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-business-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-business-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-technology-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-technology-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-lifestyle-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-lifestyle-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-entertainment-sitemap.xml</loc>
+		</sitemap>
+		<sitemap>
+			<loc>http://www.washingtonpost.com/news-blogs-entertainment-sitemap.xml</loc>
+		</sitemap>
+	</sitemapindex>
 `)
 
 var wg sync.WaitGroup
@@ -133,12 +130,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			locationTopic := strings.Split(elem.Locations[idx], "/")
 			topic := strings.ReplaceAll(locationTopic[3], "-", " ")
 			topic = strings.ReplaceAll(topic, "sitemap.xml", "")
-			// fmt.Println(topic)
-			// fmt.Println("Titles :-",)
 			newsmap[elem.Titles[idx]] = NewsMap{topic, elem.Locations[idx]}
 		}
 	}
-	fmt.Println("Size of news map :", len(newsmap))
 	p := NewsMapPage{News: newsmap}
 	t, _ := template.ParseFiles("newstracker.html")
 	t.Execute(w, p)
